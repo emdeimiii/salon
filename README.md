@@ -148,7 +148,7 @@
 
 **1. Клонируйте репозиторий:**
 ```bash
-git clone https://github.com/[ваш-username]/beauty-salon.git
+git clone https://github.com/emdeimiii/salon.git
 cd beauty-salon
 
 python -m venv venv
