@@ -149,7 +149,7 @@
 **1. Клонируйте репозиторий:**
 ```bash
 git clone https://github.com/emdeimiii/salon.git
-cd beauty-salon
+cd salon
 
 python -m venv venv
 
