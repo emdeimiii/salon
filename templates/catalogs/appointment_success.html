@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block title %}Запись создана{% endblock %}
+
+{% block content %}
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8 col-12">
+            <div class="card p-5 shadow-sm border-0">
+                <div class="text-center mb-4">
+
+                    <div class="d-flex align-items-center justify-content-center mx-auto mb-3"
+                         style="width: 80px; height: 80px; background-color: rgba(214, 72, 106, 0.15); color: var(--pink-dark); border-radius: 50%; font-size: 32px;">
+                        ✓
+                    </div>
+                </div>
+
+                <h2 class="text-center text-dark mb-3 fw-bold">Запись создана!</h2>
+                
+
+                <p class="text-center text-muted-custom lead mb-4">
+                    Спасибо, ваша запись принята. <br class="d-none d-md-block">
+                    Скоро с вами свяжется администратор салона для подтверждения.
+                </p>
+
+                <div class="d-grid gap-3 d-md-flex justify-content-center mt-4">
+
+                    <a href="{% url 'catalogs:profile' %}" class="btn-outline-main px-4 rounded-pill-custom fw-semibold">
+                        Мои записи
+                    </a>
+
+                    <a href="{% url 'catalogs:create_appointment' %}" class="btn-main px-4 rounded-pill-custom fw-semibold">
+                        Записаться ещё
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

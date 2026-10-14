@@ -1,0 +1,199 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Салон красоты{% endblock %}</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <link rel="stylesheet" href="{% static 'base.css' %}">
+</head>
+<body class="d-flex flex-column min-vh-100">
+    
+
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="{% url 'catalogs:home' %}">🌸 Beauty Salon</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto mb-2 mb-lg-0 align-items-center">
+                    <li class="nav-item"><a class="nav-link" href="{% url 'catalogs:services_list' %}">Услуги</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'catalogs:masters_list' %}">Мастера</a></li>
+
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link fw-semibold" href="{% url 'catalogs:profile' %}">
+                                👤 {{ user.username }}
+                            </a>
+                        </li>
+                        
+                        {% if user.role == 'master' %}
+                        <li class="nav-item">
+                            <a class="nav-link text-accent" href="{% url 'catalogs:master_dashboard' %}">
+                                📊 Мой график
+                            </a>
+                        </li>
+                        {% endif %}
+                        
+
+                        {% if user.role == 'admin' or user.is_staff %}
+                        <li class="nav-item">
+                            <a class="nav-link text-accent" href="{% url 'catalogs:salon_admin_dashboard' %}">
+                                🏢 Управление
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link text-muted-custom" href="/admin/" target="_blank">Админка</a>
+                        </li>
+                        {% endif %}
+                        
+                        <li class="nav-item ms-lg-2">
+                            <form action="{% url 'accounts:logout' %}" method="post" style="margin: 0;">
+                                {% csrf_token %}
+                                <button type="submit" class="btn-outline-danger-custom btn-sm-custom rounded-pill-custom px-3">
+                                    Выход
+                                </button>
+                            </form>
+                        </li>
+                    {% else %}
+                        <li class="nav-item ms-lg-2">
+                            <a class="btn-outline-main btn-sm-custom rounded-pill-custom px-3" href="{% url 'accounts:login' %}">Вход</a>
+                        </li>
+                        <li class="nav-item ms-2">
+                            <a class="btn-main btn-sm-custom rounded-pill-custom px-3" href="{% url 'accounts:register' %}">Регистрация</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+
+    {% if messages %}
+    <div class="container mt-3">
+        {% for message in messages %}
+            <div class="message message-{{ message.tags|default:'info' }} shadow-sm d-flex justify-content-between align-items-center" role="alert">
+                <span>{{ message }}</span>
+                <button type="button" class="btn-close ms-3" data-bs-dismiss="alert" aria-label="Close" style="font-size: 0.8rem;"></button>
+            </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+
+    <main class="main-wrapper flex-grow-1">
+        <div class="container py-4">
+
+            {% if request.resolver_match.url_name != 'home' %}
+            <a href="{% url 'catalogs:home' %}" class="btn-secondary-custom btn-sm-custom rounded-pill-custom mb-3">
+                ← На главную
+            </a>
+            {% endif %}
+            
+            <div class="mb-4">
+                {% block hero %}{% endblock %}
+            </div>
+            <div>
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </main>
+
+
+    <footer class="footer mt-auto py-4">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <h5 class="fw-bold">🌸 Beauty Salon</h5>
+                    <p class="small text-white-50 mb-0">
+                        Профессиональные услуги для вашей красоты.<br>
+                        Опытные мастера, уютная атмосфера.
+                    </p>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <h5 class="fw-bold">Навигация</h5>
+                    <ul class="list-unstyled small">
+                        <li class="mb-2"><a href="{% url 'catalogs:services_list' %}" class="text-decoration-none text-white-50">Услуги</a></li>
+                        <li class="mb-2"><a href="{% url 'catalogs:masters_list' %}" class="text-decoration-none text-white-50">Мастера</a></li>
+                        <li class="mb-2"><a href="{% url 'catalogs:create_appointment' %}" class="text-decoration-none text-white-50">Записаться</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <h5 class="fw-bold">Контакты</h5>
+                    <ul class="list-unstyled small text-white-50">
+                        <li class="mb-1">📍 г. Ногинск, ул. Примерная, 1</li>
+                        <li class="mb-1">📞 <a href="tel:+78005553535" class="text-decoration-none text-white-50">8 (800) 555-35-35</a></li>
+                        <li class="mb-1">✉️ info@beautysalon.ru</li>
+                    </ul>
+                </div>
+                <div class="col-md-2 mb-3">
+                    <h5 class="fw-bold">Часы работы</h5>
+                    <ul class="list-unstyled small text-white-50">
+                        <li class="mb-1">Пн–Пт: 9:00–20:00</li>
+                        <li class="mb-1">Сб: выходной</li>
+                        <li class="mb-1">Вс: выходной</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="footer-bottom text-center mt-4 pt-3 border-top border-white border-opacity-25">
+                <small class="text-white-50">© {% now "Y" %} Beauty Salon. Все права защищены.</small>
+            </div>
+        </div>
+    </footer>
+
+    <div class="modal fade" id="masterModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content rounded-4 shadow-lg">
+                <div class="modal-header bg-light border-bottom-0">
+                    <h5 class="modal-title fw-bold" id="masterTitle">Мастер</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+                </div>
+                <div class="modal-body p-4" id="masterBody"></div>
+                <div class="modal-footer bg-light border-top-0">
+                    <button type="button" class="btn-secondary-custom rounded-pill-custom px-4" data-bs-dismiss="modal">Закрыть</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+
+    <script>
+    const modalEl = document.getElementById('masterModal');
+    if (modalEl) {
+        modalEl.addEventListener('show.bs.modal', function (event) {
+            const button = event.relatedTarget;
+            const title = button.getAttribute('data-bs-title') || 'Информация о мастере';
+            const desc = button.getAttribute('data-bs-desc') || '';
+            const rating = button.getAttribute('data-bs-rating') || 'Нет рейтинга';
+            
+            const modalTitle = document.getElementById('masterTitle');
+            const modalBody = document.getElementById('masterBody');
+            
+            if (modalTitle) modalTitle.innerText = title;
+            
+            if (modalBody) {
+                modalBody.innerHTML = `
+                    <div class="mb-3">
+                        <strong>Специализация:</strong> 
+                        <span class="text-muted-custom">${desc || 'Не указана'}</span>
+                    </div>
+                    <div>
+                        <strong>Рейтинг:</strong> 
+                        <span class="text-accent">★</span> ${rating}
+                    </div>`;
+            }
+        });
+    }
+    </script>
+
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

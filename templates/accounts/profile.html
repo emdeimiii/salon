@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block title %}Мои записи{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-10">
+        <div class="card p-4 p-md-5 shadow-sm border-0">
+            <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+
+                <h2 class="fw-bold mb-0 text-accent">Мои записи</h2>
+
+                <a href="{% url 'catalogs:create_appointment' %}" class="btn-main rounded-pill-custom px-4">
+                    + Новая запись
+                </a>
+            </div>
+
+            {% if upcoming_appointments %}
+
+                <h5 class="text-muted-custom mb-3">
+                    <span class="me-2">📅</span>Предстоящие записи
+                </h5>
+
+                {% for a in upcoming_appointments %}
+                    <div class="card mb-3 border-0 shadow-sm hover-shadow">
+                        <div class="card-body">
+                            <div class="row align-items-center g-3">
+                                <div class="col-md-5">
+                                    <h5 class="mb-1 fw-bold">{{ a.service.name }}</h5>
+
+                                    <p class="text-muted-custom mb-1 small">
+                                        {{ a.service.price }} ₽ · {{ a.service.duration_minutes }} мин
+                                    </p>
+                                    <p class="mb-0 small">
+                                        <strong>{{ a.master.name }}</strong>
+                                        {% if a.master.rating %}
+                                            <span class="text-warning">★ {{ a.master.rating }}</span>
+                                        {% endif %}
+                                    </p>
+                                </div>
+                                <div class="col-md-4">
+                           
+                                    <div class="text-muted-custom small">Дата и время</div>
+                                    <strong class="fs-5">{{ a.appointment_time|date:"d.m.Y" }}</strong><br>
+                           
+                                    <span class="text-accent fw-semibold">{{ a.appointment_time|date:"H:i" }}</span>
+                                </div>
+                                <div class="col-md-3 text-md-end">
+                            
+                                    <span class="badge-custom {{ a.get_status_badge_class }} px-3 py-2 rounded-pill-custom mb-2 d-inline-block">
+                                        {{ a.get_status_display }}
+                                    </span>
+                          
+                                    <button type="button" 
+                                            class="btn-outline-danger-custom btn-sm-custom rounded-pill-custom px-3 mt-1"
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#cancelModal"
+                                            data-action="{% url 'catalogs:cancel_appointment' a.pk %}">
+                                         Отменить
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            {% if past_appointments %}
+
+                <h5 class="text-muted-custom mt-5 mb-3">
+                    <span class="me-2">📜</span>История посещений
+                </h5>
+                <div class="table-responsive">
+>
+                    <table class="table-custom">
+                        <thead>
+                            <tr>
+                                <th>Услуга</th>
+                                <th>Мастер</th>
+                                <th>Дата</th>
+                                <th class="text-end">Статус</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for a in past_appointments %}
+
+                                <tr class="text-muted-custom">
+                                    <td class="fw-semibold">{{ a.service.name }}</td>
+                                    <td>{{ a.master.name }}</td>
+                                    <td>{{ a.appointment_time|date:"d.m.Y H:i" }}</td>
+                                    <td class="text-end">
+
+                                        <span class="badge-custom {{ a.get_status_badge_class }} px-3 py-2 rounded-pill-custom">
+                                            {{ a.get_status_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endif %}
+
+            {% if not upcoming_appointments and not past_appointments %}
+                <div class="text-center py-5">
+                    <div class="display-1 mb-3 opacity-25">📅</div>
+
+                    <p class="lead text-muted-custom mb-4">У вас пока нет записей</p>
+
+                    <a href="{% url 'catalogs:create_appointment' %}" class="btn-main btn-lg-custom px-5 rounded-pill-custom">
+                        Записаться на услугу
+                    </a>
+                </div>
+            {% endif %}
+
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="cancelModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content rounded-4 border-0 shadow-lg">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold text-accent">Отмена записи</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Закрыть"></button>
+            </div>
+            <div class="modal-body py-3">
+                <p class="mb-0">Вы уверены, что хотите отменить запись?</p>
+                <p class="text-muted-custom small mt-2 mb-0">Это действие нельзя будет отменить.</p>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn-secondary-custom rounded-pill-custom px-4" data-bs-dismiss="modal">
+                    Нет, оставить
+                </button>
+                <form id="cancelForm" method="POST" action="">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-outline-danger-custom rounded-pill-custom px-4">
+                        Да, отменить
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+const cancelModal = document.getElementById('cancelModal');
+if (cancelModal) {
+    cancelModal.addEventListener('show.bs.modal', function (event) {
+        const button = event.relatedTarget;
+        const actionUrl = button.getAttribute('data-action');
+        const form = document.getElementById('cancelForm');
+        if (form && actionUrl) {
+            form.action = actionUrl;
+        }
+    });
+}
+</script>
+{% endblock %}

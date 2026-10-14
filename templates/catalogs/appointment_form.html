@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block title %}Запись на прием{% endblock %}
+
+{% block content %}
+    <div class="row justify-content-center">
+        <div class="col-lg-7 col-md-9 col-12">
+            <div class="card p-4 p-md-5 shadow-sm border-0">
+                
+                <div class="text-center mb-4">
+                    <h3 class="fw-bold text-accent">Запись на прием</h3>
+                    <p class="text-muted-custom small">Заполните форму, и мы подтвердим вашу запись в ближайшее время</p>
+                </div>
+
+                <form method="post" action="{% url 'catalogs:create_appointment' %}" novalidate>
+                    {% csrf_token %}
+
+                    <div class="mb-4">
+                        <label for="{{ form.service.id_for_label }}" class="label fw-semibold">
+                            1. Выберите услугу
+                        </label>
+                        {{ form.service }}
+                        {% if form.service.errors %}
+                            <div class="text-danger-custom small mt-1">{{ form.service.errors|join:", " }}</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="{{ form.master.id_for_label }}" class="label fw-semibold">
+                            2. Выберите мастера
+                        </label>
+                        {{ form.master }}
+                        {% if form.master.errors %}
+                            <div class="text-danger-custom small mt-1">{{ form.master.errors|join:", " }}</div>
+                        {% endif %}
+                        <small class="text-muted-custom" style="font-size: 0.8rem;">
+                            * В списке отображаются мастера, оказывающие выбранную услугу
+                        </small>
+                    </div>
+
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="{{ form.appointment_time.id_for_label }}" class="label fw-semibold">
+                                3. Дата и время
+                            </label>
+                            {{ form.appointment_time }}
+                            {% if form.appointment_time.errors %}
+                                <div class="text-danger-custom small mt-1">{{ form.appointment_time.errors|join:", " }}</div>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-6">
+                            <label for="{{ form.phone.id_for_label }}" class="label fw-semibold">
+                                4. Контактный телефон
+                            </label>
+                            {{ form.phone }}
+                            {% if form.phone.errors %}
+                                <div class="text-danger-custom small mt-1">{{ form.phone.errors|join:", " }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    {% if form.non_field_errors %}
+                        <div class="message message-error mb-4">
+                            {% for error in form.non_field_errors %}
+                                <p class="mb-0 small">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+
+                    <div class="message message-info small mb-4">
+                        💡 <strong>Обратите внимание:</strong> нельзя записаться на время, которое уже прошло.
+                    </div>
+
+                    <div class="d-grid gap-3 mt-4">
+                        <button type="submit" class="btn-main btn-lg-custom w-100">
+                            Подтвердить запись
+                        </button>
+
+                        <a href="{% url 'catalogs:services_list' %}" class="btn-link-custom text-center d-block">
+                            ← Вернуться к выбору услуг
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const serviceSelect = document.getElementById('{{ form.service.id_for_label }}');
+        const masterSelect = document.getElementById('{{ form.master.id_for_label }}');
+        
+        if (serviceSelect && masterSelect) {
+            function updateMastersList(serviceId) {
+                if (!serviceId) {
+                    masterSelect.innerHTML = '<option value="">---------</option>';
+                    return;
+                }
+                
+
+                masterSelect.innerHTML = '<option value="">Загрузка...</option>';
+                masterSelect.disabled = true;
+                
+
+                fetch(`/api/masters-by-service/?service=${serviceId}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        masterSelect.innerHTML = '<option value="">---------</option>';
+                        
+                        if (data.masters.length === 0) {
+                            masterSelect.innerHTML = '<option value="">Нет мастеров для этой услуги</option>';
+                        } else {
+                            data.masters.forEach(master => {
+                                const option = document.createElement('option');
+                                option.value = master.id;
+                                option.textContent = `${master.name} (${master.specialization})`;
+                                masterSelect.appendChild(option);
+                            });
+                        }
+                        masterSelect.disabled = false;
+                    })
+                    .catch(error => {
+                        console.error('Ошибка загрузки мастеров:', error);
+                        masterSelect.innerHTML = '<option value="">Ошибка загрузки</option>';
+                        masterSelect.disabled = false;
+                    });
+            }
+
+
+            serviceSelect.addEventListener('change', function() {
+                updateMastersList(this.value);
+            });
+            
+
+            if (serviceSelect.value) {
+                updateMastersList(serviceSelect.value);
+            }
+        }
+    });
+    </script>
+{% endblock %}

@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Панель управления салоном{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h2 class="text-accent">🏢 Панель управления салоном</h2>
+    <p class="text-muted-custom">Обзор работы салона на {{ today|date:"d.m.Y" }}</p>
+</div>
+
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3 col-sm-6">
+        <div class="card p-4 text-center">
+            <h6 class="text-muted-custom mb-2">Всего записей</h6>
+            <p class="fs-2 fw-bold text-accent mb-0">{{ total_stats.total }}</p>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="card p-4 text-center">
+            <h6 class="text-muted-custom mb-2">Ожидают подтверждения</h6>
+            <p class="fs-2 fw-bold text-warning mb-0">{{ total_stats.pending }}</p>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="card p-4 text-center">
+            <h6 class="text-muted-custom mb-2">Выручка за неделю</h6>
+            <p class="fs-2 fw-bold text-accent mb-0">{{ weekly_revenue }} ₽</p>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="card p-4 text-center">
+            <h6 class="text-muted-custom mb-2">Выручка за месяц</h6>
+            <p class="fs-2 fw-bold text-accent mb-0">{{ monthly_revenue }} ₽</p>
+        </div>
+    </div>
+</div>
+
+
+<div class="card p-4 mb-4">
+    <h4 class="mb-3">📅 Общее расписание на сегодня</h4>
+    
+    {% if today_all %}
+    <div class="table-responsive">
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th>Время</th>
+                    <th>Мастер</th>
+                    <th>Клиент</th>
+                    <th>Телефон</th>
+                    <th>Услуга</th>
+                    <th>Длит.</th>
+                    <th>Статус</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for appt in today_all %}
+                <tr>
+                    <td class="fw-bold">{{ appt.appointment_time|date:"H:i" }}</td>
+                    <td>{{ appt.master.name }}</td>
+                    <td>{{ appt.client.username }}</td>
+                    <td>{{ appt.client.phone|default:"—" }}</td>
+                    <td>{{ appt.service.name }}</td>
+                    <td>{{ appt.service.duration_minutes }} мин</td>
+                    <td>
+                        <span class="badge-custom {{ appt.get_status_badge_class }}">
+                            {{ appt.get_status_display }}
+                        </span>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-muted-custom text-center py-4">На сегодня записей нет 🎉</p>
+    {% endif %}
+</div>
+
+
+<div class="row g-4">
+    <div class="col-md-6">
+        <div class="card p-4">
+            <h4 class="mb-3">👥 Загрузка мастеров</h4>
+            {% if masters_load %}
+                {% for master in masters_load %}
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span class="fw-semibold">{{ master.name }}</span>
+                    <div>
+                        <span class="badge-custom badge-category">Сегодня: {{ master.today_count }}</span>
+                        <span class="badge-custom badge-secondary">Неделя: {{ master.week_count }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted-custom mb-0">Нет данных о загрузке</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card p-4">
+            <h4 class="mb-3">⭐ Топ услуг за месяц</h4>
+            {% if top_services %}
+                {% for service in top_services %}
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>{{ service.name }}</span>
+                    <span class="badge-custom badge-warning">{{ service.month_count }} записей</span>
+                </div>
+                {% endfor %}
+            {% else %}
+                <p class="text-muted-custom mb-0">Пока нет завершённых записей</p>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="col-12">
+        <div class="card p-4">
+            <h4 class="mb-3">🏆 Топ мастеров за месяц</h4>
+            {% if top_masters %}
+            <div class="table-responsive">
+                <table class="table-custom">
+                    <thead>
+                        <tr>
+                            <th>Мастер</th>
+                            <th>Специализация</th>
+                            <th>Выполнено записей</th>
+                            <th>Выручка</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for master in top_masters %}
+                        <tr>
+                            <td class="fw-bold">{{ master.name }}</td>
+                            <td>{{ master.specialization }}</td>
+                            <td>
+                                <span class="badge-custom badge-success">{{ master.month_count }}</span>
+                            </td>
+                            <td class="fw-bold text-accent">{{ master.month_revenue|default:0 }} ₽</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+                <p class="text-muted-custom mb-0">Пока нет данных о мастерах</p>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

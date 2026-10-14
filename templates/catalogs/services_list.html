@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Услуги{% endblock %}
+
+{% block content %}
+<div class="mb-5">
+    <h3 class="mb-4 text-accent">
+        {% if active_category %}
+        {% for cat in categories %}
+        {% if cat.id == active_category %}
+        Услуги: {{ cat.icon }} {{ cat.name }}
+        {% endif %}
+        {% endfor %}
+        {% else %}
+        Все наши услуги
+        {% endif %}
+    </h3>
+
+    {% if categories %}
+    <div class="d-flex flex-wrap justify-content-center gap-2 mb-5">
+        <a href="{% url 'catalogs:services_list' %}"
+            class="{% if active_category is None %}btn-main{% else %}btn-outline-main{% endif %} rounded-pill-custom px-4 py-2">
+            Все
+        </a>
+
+        {% for cat in categories %}
+        <a href="{% url 'catalogs:services_list' %}?category={{ cat.id }}"
+            class="{% if active_category == cat.id %}btn-main{% else %}btn-outline-main{% endif %} rounded-pill-custom px-4 py-2">
+            {{ cat.icon }} {{ cat.name }}
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    {% if services %}
+    <div class="row g-4">
+        {% for s in services %}
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 shadow-sm border-0 hover-shadow transition">
+                <div class="card-body p-4 d-flex flex-column">
+                    <h5 class="card-title text-dark mb-2">{{ s.name }}</h5>
+
+                    {% if s.category %}
+                    <span class="badge-custom badge-category rounded-pill-custom mb-3 align-self-start">
+                        {{ s.category.icon }} {{ s.category.name }}
+                    </span>
+                    {% endif %}
+
+
+                    {% if s.description %}
+                    <p class="text-muted-custom small mb-2">
+                        {{ s.description|truncatewords:20 }}
+                    </p>
+                    {% endif %}
+
+                    <p class="text-muted-custom small mb-1"> {{ s.duration_minutes }} мин</p>
+
+                    <div class="mt-auto">
+                        <h4 class="text-accent fw-bold mb-3">{{ s.price }} ₽</h4>
+
+                        <a href="{% url 'catalogs:create_appointment' %}?service={{ s.id }}"
+                            class="btn-main rounded-pill-custom w-100">
+                            Записаться
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-5 bg-light rounded-3">
+        <p class="lead text-muted-custom mb-0">В этой категории пока нет услуг 😔</p>
+        <a href="{% url 'catalogs:services_list' %}" class="btn-outline-main mt-3 rounded-pill-custom">
+            Показать все услуги
+        </a>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

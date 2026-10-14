@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Наши мастера{% endblock %}
+
+{% block content %}
+    <h3 class="fw-bold mb-4 text-accent">Наши мастера</h3>
+
+    {% if specializations %}
+    <div class="d-flex flex-wrap justify-content-center gap-2 mb-5">
+        <a href="{% url 'catalogs:masters_list' %}"
+           class="{% if active_specialization is None %}btn-main{% else %}btn-outline-main{% endif %} rounded-pill-custom px-4 py-2">
+            Все
+        </a>
+
+        {% for spec in specializations %}
+        <a href="{% url 'catalogs:masters_list' %}?specialization={{ spec }}"
+           class="{% if active_specialization == spec %}btn-main{% else %}btn-outline-main{% endif %} rounded-pill-custom px-4 py-2">
+            {{ spec }}
+        </a>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <div class="row g-4">
+        {% for master in masters %}
+        <div class="col-md-4 col-sm-6">
+            <div class="card h-100 border-0 shadow-sm hover-shadow transition">
+
+                {% if master.photo %}
+                <img src="{{ master.photo.url }}" class="card-img-top" alt="{{ master.name }}" style="height: 250px; object-fit: cover; object-position: top;">
+                {% else %}
+                <div class="d-flex align-items-center justify-content-center bg-light" style="height: 250px;">
+                    <span class="text-muted-custom fs-1">👤</span>
+                </div>
+                {% endif %}
+
+                <div class="card-body d-flex flex-column text-center">
+                    <h4 class="card-title fw-bold mb-1">{{ master.name }}</h4>
+                    <p class="text-muted-custom mb-2 small">{{ master.specialization }}</p>
+
+                    <div class="mb-2 small">
+                        <div class="text-muted-custom">📅 {{ master.get_work_days_display }}</div>
+                        <div class="text-muted-custom">
+                            🕐 {{ master.work_start|time:"H:i" }} – {{ master.work_end|time:"H:i" }}
+                        </div>
+                        {% if master.lunch_start and master.lunch_end %}
+                            <div class="text-muted-custom small">
+                                ☕ Обед: {{ master.lunch_start|time:"H:i" }} – {{ master.lunch_end|time:"H:i" }}
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    {% if master.rating > 0 %}
+                    <div class="mb-3 text-warning fs-5">★ {{ master.rating }}</div>
+                    {% else %}
+                    <div class="mb-3 text-muted-custom small">Рейтинг пока не установлен</div>
+                    {% endif %}
+
+                    <div class="mt-auto d-grid gap-2">
+                        <button type="button"
+                                class="btn-secondary-custom rounded-pill-custom"
+                                data-bs-toggle="modal"
+                                data-bs-target="#masterModal"
+                                data-bs-title="{{ master.name }}"
+                                data-bs-desc="{{ master.specialization }}"
+                                data-bs-rating="{{ master.rating }}"
+                                data-bs-schedule="{{ master.get_work_days_display }}, {{ master.work_start|time:'H:i' }} – {{ master.work_end|time:'H:i' }}">
+                            Подробнее
+                        </button>
+                        <a href="{% url 'catalogs:create_appointment' %}?master={{ master.id }}" class="btn-main rounded-pill-custom">
+                            Записаться
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12 text-center py-5 bg-light rounded-3">
+            <p class="lead text-muted-custom mb-0">Пока нет добавленных мастеров 😔</p>
+            <a href="{% url 'catalogs:services_list' %}" class="btn-outline-main mt-3 rounded-pill-custom">Посмотреть услуги</a>
+        </div>
+        {% endfor %}
+    </div>
+{% endblock %}

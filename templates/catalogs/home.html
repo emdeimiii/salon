@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}Главная — Beauty Salon{% endblock %}
+
+{% block hero %}
+<div class="hero-banner position-relative overflow-hidden rounded-4">
+    <img src="https://i.pinimg.com/736x/74/44/53/744453fb07b83229a5145a29c14deb44.jpg" 
+         alt="Салон красоты" class="bg-photo">
+    <div class="overlay"></div>
+    
+    <div class="petals">
+        <span class="petal">🌸</span>
+        <span class="petal">🌷</span>
+        <span class="petal">🌹</span>
+    </div>
+
+    <div class="hero-content position-relative z-3 text-center text-white">
+        <h1 class="display-4 fw-bold mb-2">Здесь</h1>
+        <h1 class="display-4 fw-bold mb-2 accent-pink">Творят</h1>
+        <h1 class="display-4 fw-bold mb-4">Красоту</h1>
+        <p class="lead mb-4 opacity-75">Доверьте свой образ профессионалам</p>
+        <a href="{% url 'catalogs:create_appointment' %}" class="btn-hero btn-lg-custom rounded-pill-custom shadow px-5">
+            Записаться сейчас
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="mb-5">
+
+    <div class="text-center mb-5">
+        <h3>Выберите категорию</h3>
+        <div class="d-flex flex-wrap justify-content-center gap-2">
+            {% for category in categories %}
+
+                <a href="{% url 'catalogs:services_list' %}?category={{ category.id }}"
+                   class="btn-outline-main rounded-pill-custom px-4 py-2">
+                    {{ category.icon }} {{ category.name }}
+                </a>
+            {% empty %}
+
+                <p class="text-muted-custom">Категории пока не добавлены.</p>
+            {% endfor %}
+        </div>
+    </div>
+
+    <hr class="my-4">
+
+    <h3>Популярные услуги</h3>
+
+    <p class="text-center text-muted-custom mb-4">Начните с самых востребованных процедур</p>
+
+    <div class="row g-4 mb-5">
+        {% for service in featured_services %}
+            <div class="col-md-6 col-lg-4">
+                <div class="card p-4 h-100 d-flex flex-column">
+                    <h5 class="text-dark mb-2">{{ service.name }}</h5>
+
+                    {% if service.category %}
+
+                    <span class="badge-custom badge-category rounded-pill-custom mb-3 align-self-start">
+                        {{ service.category.icon }} {{ service.category.name }}
+                    </span>
+                    {% endif %}
+
+                    <p class="text-muted-custom small flex-grow-1">
+                        {{ service.description|truncatewords:15|default:"Описание отсутствует" }}
+                    </p>
+
+                    <div class="d-flex justify-content-between align-items-center mt-auto pt-3 border-top">
+
+                        <span class="fs-5 fw-bold text-accent">{{ service.price }} ₽</span>
+
+                        <span class="text-muted-custom small">⏱ {{ service.duration_minutes }} мин</span>
+                    </div>
+
+                    <a href="{% url 'catalogs:create_appointment' %}" class="btn-main rounded-pill-custom mt-3 w-100">
+                        Записаться
+                    </a>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-12 text-center py-5">
+
+                <p class="lead text-muted-custom">Услуги пока не добавлены в каталог.</p>
+                {% if user.is_staff %}
+
+                    <a href="/admin/" class="btn-main mt-3 rounded-pill-custom px-4">Добавить в админке</a>
+                {% endif %}
+            </div>
+        {% endfor %}
+    </div>
+
+    <div class="text-center">
+
+        <a href="{% url 'catalogs:services_list' %}" class="btn-main rounded-pill-custom px-5 py-2">
+            Смотреть все услуги →
+        </a>
+    </div>
+</div>
+{% endblock %}

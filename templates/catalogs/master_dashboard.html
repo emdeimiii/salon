@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+
+{% block title %}Кабинет мастера — {{ master.name }}{% endblock %}
+
+{% block content %}
+<div class="mb-4">
+    <h2 class="text-accent">👤 Кабинет мастера</h2>
+    <p class="text-muted-custom">{{ master.name }} · {{ master.specialization }}</p>
+</div>
+
+
+<div class="row g-4 mb-4">
+    <div class="col-md-3 col-sm-6">
+        <div class="card p-4 text-center">
+            <h6 class="text-muted-custom mb-2">За сегодня</h6>
+            <p class="fs-2 fw-bold text-accent mb-0">{{ today_appointments.count }}</p>
+            <small class="text-muted-custom">записей</small>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="card p-4 text-center">
+            <h6 class="text-muted-custom mb-2">На неделе</h6>
+            <p class="fs-2 fw-bold text-accent mb-0">{{ week_appointments.count }}</p>
+            <small class="text-muted-custom">записей</small>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="card p-4 text-center">
+            <h6 class="text-muted-custom mb-2">За месяц</h6>
+            <p class="fs-2 fw-bold text-accent mb-0">{{ month_stats.count|default:0 }}</p>
+            <small class="text-muted-custom">{{ month_stats.revenue|default:0 }} ₽</small>
+        </div>
+    </div>
+    <div class="col-md-3 col-sm-6">
+        <div class="card p-4 text-center">
+            <h6 class="text-muted-custom mb-2">Всего выполнено</h6>
+            <p class="fs-2 fw-bold text-accent mb-0">{{ total_stats.total_count|default:0 }}</p>
+            <small class="text-muted-custom">{{ total_stats.total_revenue|default:0 }} ₽</small>
+        </div>
+    </div>
+</div>
+
+<div class="card p-4 mb-4">
+    <h4 class="mb-3">📅 Записи на сегодня ({{ today|date:"d.m.Y" }})</h4>
+
+    {% if today_appointments %}
+    <div style="overflow-x: auto;">
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th>Время</th>
+                    <th>Клиент</th>
+                    <th>Телефон</th>
+                    <th>Услуга</th>
+                    <th>Длит.</th>
+                    <th>Статус</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for appt in today_appointments %}
+                <tr>
+                    <td class="fw-bold">{{ appt.appointment_time|date:"H:i" }}</td>
+                    <td>{{ appt.client.username }}</td>
+                    <td>{{ appt.client.phone|default:"—" }}</td>
+                    <td>{{ appt.service.name }}</td>
+                    <td>{{ appt.service.duration_minutes }} мин</td>
+                    <td>
+                        <span class="badge-custom {{ appt.get_status_badge_class }}">
+                            {{ appt.get_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="d-flex flex-column gap-1">
+                            <form method="POST" action="{% url 'catalogs:master_update_status' appt.pk %}" style="margin: 0;">
+                                {% csrf_token %}
+                                <input type="hidden" name="status" value="confirmed">
+                                <button type="submit" class="btn btn-sm btn-success w-100">✅ Подтвердить</button>
+                            </form>
+                            <form method="POST" action="{% url 'catalogs:master_update_status' appt.pk %}" style="margin: 0;">
+                                {% csrf_token %}
+                                <input type="hidden" name="status" value="completed">
+                                <button type="submit" class="btn btn-sm btn-primary w-100">✔️ Завершить</button>
+                            </form>
+                            <form method="POST" action="{% url 'catalogs:master_update_status' appt.pk %}" style="margin: 0;">
+                                {% csrf_token %}
+                                <input type="hidden" name="status" value="cancelled">
+                                <button type="submit" class="btn btn-sm btn-danger w-100">❌ Отменить</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-muted-custom text-center py-4">На сегодня записей нет 🎉</p>
+    {% endif %}
+</div>
+
+<div class="card p-4">
+    <h4 class="mb-3">📆 Записи на неделю ({{ week_start|date:"d.m" }} — {{ week_end|date:"d.m.Y" }})</h4>
+
+    {% if week_appointments %}
+    <div style="overflow-x: auto;">
+        <table class="table-custom">
+            <thead>
+                <tr>
+                    <th>Дата</th>
+                    <th>Время</th>
+                    <th>Клиент</th>
+                    <th>Телефон</th>
+                    <th>Услуга</th>
+                    <th>Длит.</th>
+                    <th>Статус</th>
+                    <th>Действия</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for appt in week_appointments %}
+                <tr>
+                    <td>{{ appt.appointment_time|date:"d.m.Y" }}</td>
+                    <td class="fw-bold">{{ appt.appointment_time|date:"H:i" }}</td>
+                    <td>{{ appt.client.username }}</td>
+                    <td>{{ appt.client.phone|default:"—" }}</td>
+                    <td>{{ appt.service.name }}</td>
+                    <td>{{ appt.service.duration_minutes }} мин</td>
+                    <td>
+                        <span class="badge-custom {{ appt.get_status_badge_class }}">
+                            {{ appt.get_status_display }}
+                        </span>
+                    </td>
+                    <td>
+                        <div class="d-flex flex-column gap-1">
+                            <form method="POST" action="{% url 'catalogs:master_update_status' appt.pk %}" style="margin: 0;">
+                                {% csrf_token %}
+                                <input type="hidden" name="status" value="confirmed">
+                                <button type="submit" class="btn btn-sm btn-success w-100">✅ Подтвердить</button>
+                            </form>
+                            <form method="POST" action="{% url 'catalogs:master_update_status' appt.pk %}" style="margin: 0;">
+                                {% csrf_token %}
+                                <input type="hidden" name="status" value="completed">
+                                <button type="submit" class="btn btn-sm btn-primary w-100">✔️ Завершить</button>
+                            </form>
+                            <form method="POST" action="{% url 'catalogs:master_update_status' appt.pk %}" style="margin: 0;">
+                                {% csrf_token %}
+                                <input type="hidden" name="status" value="cancelled">
+                                <button type="submit" class="btn btn-sm btn-danger w-100">❌ Отменить</button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p class="text-muted-custom text-center py-4">На эту неделю записей нет</p>
+    {% endif %}
+</div>
+{% endblock %}
